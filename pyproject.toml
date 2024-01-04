@@ -1,0 +1,22 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "exact_cover_py"
+version = "0.0.1"
+description = "Exact cover solver in Python"
+readme = "README.md"
+license="CC-BY-NC-4.0"
+authors = ["Thierry Parmentelat"]
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "License :: CC-BY-NC-4.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/parmentelat/exact_cover_py"
+Issues = "https://github.com/parmentelat/exact_cover_py/issues"
+
