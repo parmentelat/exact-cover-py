@@ -65,7 +65,6 @@ class Node:
             return
         self.right.left = self.left
         self.left.right = self.right
-        # return self.right
 
     def uncover_horizontally(self):
         """
@@ -82,7 +81,6 @@ class Node:
             return
         self.down.up = self.up
         self.up.down = self.down
-        # return self.down
 
     def uncover_vertically(self):
         """
