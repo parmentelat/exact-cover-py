@@ -65,25 +65,28 @@ class Matrix:
     """
     root: Node
 
-    # def debug(self):
-    #     """
-    #     roughly output the matrix
-    #     """
-    #     nav = self.root.right
-    #     col_index = 0
-    #     while nav is not self.root:
-    #         print(f"===== column {col_index} has rows")
-    #         row_nav = nav.down
-    #         while row_nav is not nav:
-    #             if row_nav is None:
-    #                 print("XX", end=' ')
-    #             else:
-    #                 print(repr(row_nav), end=' ')
-    #             row_nav = row_nav.down
-    #         print()
-    #         nav = nav.right
-    #         col_index += 1
+    def reverse(self):
+        """
+        reconstruct the input matrix for debugging
+        """
+        nav_col = self.root.right
+        ones = set()
+        col_index = 0
+        while nav_col is not self.root:
+            nav_row = nav_col.down
+            while nav_row is not nav_col:
+                ones.add((nav_row.row, nav_row.col.row))
+                nav_row = nav_row.down
+            nav_col = nav_col.right
+            col_index += 1
 
+        rows, cols = (max(ones, key=lambda x: x[0])[0],
+                      max(ones, key=lambda x: x[1])[1])
+
+        loop = np.zeros((rows+1, cols+1), dtype=np.uint8)
+        for row, col in ones:
+            loop[row, col] = True
+        return loop
 
     @staticmethod
     def from_numpy(array: np.ndarray) -> 'Matrix':
