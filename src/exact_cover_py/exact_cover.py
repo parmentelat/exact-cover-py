@@ -15,11 +15,19 @@ class Node:
     right: 'Node'
     up: 'Node'
     down: 'Node'
-    col: 'Node'  # column header, also referred to as col_node
-    row: int     # row index
+    # point to relative column header, also referred to as col_node
+    # None for the col headers themseves
+    col: 'Node'
+    # row index for the non-header nodes
+    # -1 for the header nodes
+    row: int
 
     def __repr__(self):
-        return f"{self.row}x{self.col.row}"
+        # a header node
+        if self.col is None:
+            return "header"
+        else:
+            return f"{self.row}x{self.col.row}"
 
     def insert_horizontally_after(self, where):
         """
