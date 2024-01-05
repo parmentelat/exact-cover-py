@@ -96,14 +96,14 @@ class Node:
         """
         self.cover_horizontally()
         # iterating on the rows below the header
-        nav_row = self.down
-        while nav_row is not self:
+        nodei = self.down
+        while nodei is not self:
             # iterating on the columns of the row
-            nav_col = nav_row.right
-            while nav_col is not nav_row:
-                nav_col.cover_vertically()
-                nav_col = nav_col.right
-            nav_row = nav_row.down
+            nodej = nodei.right
+            while nodej is not nodei:
+                nodej.cover_vertically()
+                nodej = nodej.right
+            nodei = nodei.down
 
     def uncover_column(self):
         """
@@ -111,14 +111,14 @@ class Node:
         self is expected to be a column header
         """
         # iterating on the rows above the header
-        nav_row = self.up
-        while nav_row is not self:
+        nodei = self.up
+        while nodei is not self:
             # iterating on the columns of the row
-            nav_col = nav_row.left
-            while nav_col is not nav_row:
-                nav_col.uncover_vertically()
-                nav_col = nav_col.left
-            nav_row = nav_row.up
+            nodej = nodei.left
+            while nodej is not nodei:
+                nodej.uncover_vertically()
+                nodej = nodej.left
+            nodei = nodei.up
         self.uncover_horizontally()
 
 @dataclass
@@ -132,15 +132,15 @@ class Matrix:
         """
         reconstruct the input matrix for debugging
         """
-        nav_col = self.root.right
+        nodej = self.root.right
         ones = set()
         col_index = 0
-        while nav_col is not self.root:
-            nav_row = nav_col.down
-            while nav_row is not nav_col:
-                ones.add((nav_row.row, nav_row.col.row))
-                nav_row = nav_row.down
-            nav_col = nav_col.right
+        while nodej is not self.root:
+            nodei = nodej.down
+            while nodei is not nodej:
+                ones.add((nodei.row, nodei.col.row))
+                nodei = nodei.down
+            nodej = nodej.right
             col_index += 1
 
         rows, cols = (max(ones, key=lambda x: x[0])[0],
