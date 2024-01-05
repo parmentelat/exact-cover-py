@@ -57,6 +57,71 @@ class Node:
             where.down.up = self
             where.down = self
 
+    def cover_horizontally(self):
+        """
+        remove self from the row
+        """
+        if self.right is self:
+            return
+        self.right.left = self.left
+        self.left.right = self.right
+        # return self.right
+
+    def uncover_horizontally(self):
+        """
+        reinsert self into the row
+        """
+        self.right.left = self
+        self.left.right = self
+
+    def cover_vertically(self):
+        """
+        remove self from the column
+        """
+        if self.down is self:
+            return
+        self.down.up = self.up
+        self.up.down = self.down
+        # return self.down
+
+    def uncover_vertically(self):
+        """
+        reinsert self into the column
+        """
+        self.down.up = self
+        self.up.down = self
+
+    def cover_column(self):
+        """
+        remove the column from the matrix
+        self is expected to be a column header
+        """
+        self.cover_horizontally()
+        # iterating on the rows below the header
+        nav_row = self.down
+        while nav_row is not self:
+            # iterating on the columns of the row
+            nav_col = nav_row.right
+            while nav_col is not nav_row:
+                nav_col.cover_vertically()
+                nav_col = nav_col.right
+            nav_row = nav_row.down
+
+    def uncover_column(self):
+        """
+        reinsert the column into the matrix
+        self is expected to be a column header
+        """
+        # iterating on the rows above the header
+        nav_row = self.up
+        while nav_row is not self:
+            # iterating on the columns of the row
+            nav_col = nav_row.left
+            while nav_col is not nav_row:
+                nav_col.uncover_vertically()
+                nav_col = nav_col.left
+            nav_row = nav_row.up
+        self.uncover_horizontally()
 
 @dataclass
 class Matrix:
