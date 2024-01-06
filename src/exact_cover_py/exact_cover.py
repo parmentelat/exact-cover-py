@@ -23,6 +23,9 @@ class Node:
     row: int
 
     def __repr__(self):
+        # root node
+        if self.down is None:
+            return "root"
         # a header node
         if self.col is None:
             return "header"
