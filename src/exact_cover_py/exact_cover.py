@@ -149,6 +149,15 @@ class Matrix:
         loop = np.zeros((rows+1, cols+1), dtype=np.uint8)
         for row, col in ones:
             loop[row, col] = True
+        # outline empty rows and columns
+        empty_rows = [i for i in range(rows+1)
+                      if not np.any(loop[i])]
+        empty_cols = [j for j in range(cols+1)
+                        if not np.any(loop[:, j])]
+        for i in empty_rows:
+            loop[i] = 2
+        for j in empty_cols:
+            loop[:, j] = 2
         return loop
 
     @staticmethod
