@@ -196,3 +196,30 @@ class Matrix:
                     node.insert_vertically_after(where_in_column)
 
         return Matrix(root)
+
+    def search(self, k=0):
+        """
+        a generator that yields all solutions
+        """
+        h = self.root
+        if h.right is h:
+            yield [] # xxx how do we express the solution ?
+        else:
+            # without the heuristic, for now
+            c = h.right
+            c.cover_column()
+            r = c.down
+            while r is not c:
+                solution = [r.row]
+                j = r.right
+                while j is not r:
+                    j.col.cover_column()
+                    j = j.right
+                for s in self.search(k+1):
+                    yield solution + s
+                j = r.left
+                while j is not r:
+                    j.col.uncover_column()
+                    j = j.left
+                r = r.down
+            c.uncover_column()
