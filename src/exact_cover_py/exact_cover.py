@@ -223,3 +223,10 @@ class Matrix:
                     j = j.left
                 r = r.down
             c.uncover_column()
+
+def exact_cover(array: np.ndarray):
+    """
+    a generator that yields all solutions
+    """
+    matrix = Matrix.from_numpy(array)
+    yield from matrix.search()
