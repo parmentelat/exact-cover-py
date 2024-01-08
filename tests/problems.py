@@ -3,6 +3,7 @@ import pandas as pd
 
 DTYPE_FOR_ARRAY = bool
 
+
 # one specific problem that I had trouble with
 # originally based on solving the trivial problem
 # of arranging 2 identical triminos on a 3x3 board
@@ -43,16 +44,14 @@ def small_trimino_problem():
     ]
     return dict(
         data=np.array(to_cover, dtype=DTYPE_FOR_ARRAY),
-        solution1=[5, 13],
-        count=2,
+        solutions={(5, 13), (6, 12)},
     )
 
 
 def small_trimino_problem_from_file():
     return dict(
         data=np.load("tests/data/small_trimino.npy"),
-        solution1=[5, 13],
-        count=2,
+        solutions={(5, 13), (6, 12)},
     )
 
 
@@ -71,8 +70,7 @@ def detailed_wikipedia_problem():
             [[1 if i in s else 0 for i in range(1, 8)] for s in sets],
             dtype=DTYPE_FOR_ARRAY,
         ),
-        solution1=[1, 3, 5],
-        count=1,
+        solutions={(1, 3, 5)},
     )
 
 
@@ -87,8 +85,7 @@ def bruteforce_problem1():
     ]
     return dict(
         data=np.array(to_cover, dtype=DTYPE_FOR_ARRAY),
-        solution1=[0, 1, 2],
-        count=2,
+        solutions={(0, 1, 2), (3, 4, 5)}
     )
 
 
@@ -106,8 +103,17 @@ def bruteforce_problem2():
     ]
     return dict(
         data=np.array(to_cover, dtype=DTYPE_FOR_ARRAY),
-        solution1=[0, 1, 2],
-        count=9,
+        solutions={
+            (0, 1, 2),
+            (0, 1, 8),
+            (0, 7, 2),
+            (0, 7, 8),
+            (4, 5, 3),
+            (6, 1, 2),
+            (6, 1, 8),
+            (6, 7, 2),
+            (6, 7, 8),
+        }
     )
 
 
@@ -128,16 +134,38 @@ def bruteforce_problem3():
     ]
     return dict(
         data=np.array(to_cover, dtype=DTYPE_FOR_ARRAY),
-        solution1=[0, 1, 2],
-        count=16,
+        solutions={
+            (0, 1, 2),
+            (0, 1, 8),
+            (0, 7, 2),
+            (0, 7, 8),
+            (4, 5, 3),
+            (4, 5, 9),
+            (4, 11, 3),
+            (4, 11, 9),
+            (6, 1, 2),
+            (6, 1, 8),
+            (6, 7, 2),
+            (6, 7, 8),
+            (10, 5, 3),
+            (10, 5, 9),
+            (10, 11, 3),
+            (10, 11, 9),
+        }
     )
 
 # not enabled for now
-# def pentamino_5_12_problem():
-def pentamino_5_12_notaproblem():
-    to_cover = pd.read_csv("tests/data/pentominos_5_12.csv").to_numpy()
+# def pentomino_5_12_problem():
+def pentamino_5_12_unknownproblem():
+    to_cover = pd.read_csv("tests/data/pentominos-5-12.csv").to_numpy()
     return dict(
         data=to_cover,
-        solution1=None,
-        count=None,
+        solutions="UNTESTED",
+    )
+
+def pentomino_chessboard_unknownproblem():
+    to_cover = pd.read_csv("tests/data/pentominos-chessboard.csv", sep=" ").to_numpy()
+    return dict(
+        data=to_cover,
+        solutions="UNTESTED",
     )
