@@ -1,8 +1,13 @@
+from itertools import islice
+
 import pytest
 
 from exact_cover_py import exact_cover
 
-import problems
+try:
+    from . import problems
+except:
+    import problems
 
 all_problems = [
     problem for problem in problems.__dict__ if "_problem" in problem
@@ -22,13 +27,24 @@ def define_test(problem_name):
     """
 
     def test_solutions(problem):
-        input = problem['data']
-        canonical_solutions = canonical(problem['solutions'])
-        try:
-            canonical_computed = set(tuple(sorted(x)) for x in exact_cover(input))
-            assert canonical_computed == canonical_solutions
-        except StopIteration:
-            assert problem['solutions'] == set()
+        match problem:
+            case {'data': data, 'solutions': solutions}:
+                canonical_solutions = canonical(solutions)
+                try:
+                    canonical_partial_computed = set(
+                        tuple(sorted(x)) for x in exact_cover(data))
+                    assert canonical_partial_computed == canonical_solutions
+                except StopIteration:
+                    assert solutions == set()
+            case {'data': data, 'first_solutions': first_solutions}:
+                canonical_first_solutions = canonical(first_solutions)
+                how_many = len(canonical_first_solutions)
+                try:
+                    canonical_partial_computed = set(
+                        tuple(sorted(x)) for x in islice(exact_cover(data), how_many))
+                    assert canonical_partial_computed == canonical_first_solutions
+                except StopIteration:
+                    assert 'first_solutions' == set()
     problem = problems.__dict__[problem_name]()
     test_name = f"test_{problem_name}"
     # assign the global variable test_name to the newly defined function
