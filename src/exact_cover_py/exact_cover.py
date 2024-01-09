@@ -16,7 +16,7 @@ class Node:
     up: 'Node'
     down: 'Node'
     # point to relative column header, also referred to as col_node
-    # None for the col headers themseves
+    # None for the col headers themselves
     col: 'Node'
     # row index for the non-header nodes
     # -1 for the header nodes
