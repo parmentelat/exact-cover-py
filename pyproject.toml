@@ -12,9 +12,18 @@ authors = [
     {name="Thierry Parmentelat", email="thierry.parmentelat@inria.fr"},
 ]
 requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+]
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
+]
+
+[project.optional-dependencies]
+tests = [
+    "pytest",
+    "pandas",
 ]
 
 [project.urls]
