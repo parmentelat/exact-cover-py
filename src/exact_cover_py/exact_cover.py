@@ -21,6 +21,8 @@ class Node:
     # row index for the non-header nodes
     # -1 for the header nodes
     row: int
+    # the S heuristic
+    sum: int = 0
 
     def __repr__(self):
         # root node
@@ -28,7 +30,7 @@ class Node:
             return "root"
         # a header node
         if self.col is None:
-            return "header"
+            return f"header [S={self.sum}]"
         else:
             return f"{self.row}x{self.col.row}"
 
@@ -105,6 +107,7 @@ class Node:
             nodej = nodei.right
             while nodej is not nodei:
                 nodej.cover_vertically()
+                nodej.col.sum -= 1
                 nodej = nodej.right
             nodei = nodei.down
 
@@ -120,6 +123,7 @@ class Node:
             nodej = nodei.left
             while nodej is not nodei:
                 nodej.uncover_vertically()
+                nodej.col.sum += 1
                 nodej = nodej.left
             nodei = nodei.up
         self.uncover_horizontally()
@@ -194,8 +198,24 @@ class Matrix:
                     # connect vertically
                     where_in_column = column_headers[col_index].up
                     node.insert_vertically_after(where_in_column)
+                    # update header's sum
+                    col_node.sum += 1
 
         return Matrix(root)
+
+    def optimal_column(self):
+        """
+        return the column header with the smallest sum
+        """
+        node = self.root.right
+        min_sum = node.sum
+        min_node = node
+        while node is not self.root:
+            if node.sum < min_sum:
+                min_sum = node.sum
+                min_node = node
+            node = node.right
+        return min_node
 
     def search(self, k=0):
         """
@@ -203,10 +223,10 @@ class Matrix:
         """
         h = self.root
         if h.right is h:
-            yield [] # xxx how do we express the solution ?
+            yield []
         else:
-            # without the heuristic, for now
-            c = h.right
+            # use the S heuristic
+            c = self.optimal_column()
             c.cover_column()
             r = c.down
             while r is not c:
