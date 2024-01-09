@@ -154,6 +154,22 @@ def bruteforce_problem3():
         }
     )
 
+def knuth_original_problem():
+    to_cover = np.array([
+        [0, 0, 1, 0, 1, 1, 0],
+        [1, 0, 0, 1, 0, 0, 1],
+        [0, 1, 1, 0, 0, 1, 0],
+        [1, 0, 0, 1, 0, 0, 0],
+        [0, 1, 0, 0, 0, 0, 1],
+        [0, 0, 0, 1, 1, 0, 1],
+    ])
+    return dict(
+        data=to_cover,
+        solutions={
+            (0, 3, 4),
+        }
+    )
+
 # not enabled for now
 # def pentomino_5_12_problem():
 def pentamino_5_12_unknownproblem():
