@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-@dataclass
+@dataclass(slots=True)
 class Node:
     """
     Node in a doubly-linked list.
@@ -127,6 +127,7 @@ class Node:
                 nodej = nodej.left
             nodei = nodei.up
         self.uncover_horizontally()
+
 
 @dataclass
 class Matrix:
