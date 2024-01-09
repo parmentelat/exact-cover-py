@@ -35,8 +35,22 @@ print(list(exact_cover(problem)))
 ## Development
 
 ```bash
-# install dependencies
+# build and install locally with tests dependencies
 pip install -e .[tests]
 
 pytest
+```
+
+## Building
+
+```bash
+pip install build
+python -m build
+```
+
+## Publishing
+
+```bash
+pip install twine
+twine upload dist/*
 ```
