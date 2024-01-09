@@ -113,7 +113,7 @@ def bruteforce_problem2():
             (6, 1, 8),
             (6, 7, 2),
             (6, 7, 8),
-        }
+        },
     )
 
 
@@ -151,24 +151,55 @@ def bruteforce_problem3():
             (10, 5, 9),
             (10, 11, 3),
             (10, 11, 9),
-        }
+        },
     )
 
+
+def bruteforce3_with_odd_zero_rows_problem():
+    p = bruteforce_problem3()
+    d, s = p['data'], p['solutions']
+    r, c = d.shape
+    # add same area of 0s on the right hand side of d
+    d1 = np.hstack((d, np.zeros(d.shape, dtype=d.dtype)))
+    # reshape it - each gets folded in 2
+    # so we end up with all the odd rows being 0
+    d2 = d1.reshape((-1, c))
+    # non empty rows are now 0 2 4, so twice the original index
+    s = { tuple(map(lambda i: i*2, t)) for t in s }
+    return dict(data=d2, solutions=s)
+
+def bruteforce3_with_odd_zero_rows_problem():
+    p = bruteforce_problem3()
+    d, s = p['data'], p['solutions']
+    r, c = d.shape
+    # add same area of 0s on the left hand side of d
+    d1 = np.hstack((np.zeros(d.shape, dtype=d.dtype), d))
+    # reshape it - each gets folded in 2
+    # so we end up with all the even rows being 0
+    d2 = d1.reshape((-1, c))
+    # non empty rows are now 1 3 5, so twice the original index + 1
+    s = { tuple(map(lambda i: i*2+1, t)) for t in s }
+    return dict(data=d2, solutions=s)
+
+
 def knuth_original_problem():
-    to_cover = np.array([
-        [0, 0, 1, 0, 1, 1, 0],
-        [1, 0, 0, 1, 0, 0, 1],
-        [0, 1, 1, 0, 0, 1, 0],
-        [1, 0, 0, 1, 0, 0, 0],
-        [0, 1, 0, 0, 0, 0, 1],
-        [0, 0, 0, 1, 1, 0, 1],
-    ])
+    to_cover = np.array(
+        [
+            [0, 0, 1, 0, 1, 1, 0],
+            [1, 0, 0, 1, 0, 0, 1],
+            [0, 1, 1, 0, 0, 1, 0],
+            [1, 0, 0, 1, 0, 0, 0],
+            [0, 1, 0, 0, 0, 0, 1],
+            [0, 0, 0, 1, 1, 0, 1],
+        ]
+    )
     return dict(
         data=to_cover,
         solutions={
             (0, 3, 4),
-        }
+        },
     )
+
 
 # not enabled for now
 # def pentomino_5_12_problem():
@@ -178,6 +209,7 @@ def pentamino_5_12_unknownproblem():
         data=to_cover,
         solutions="UNTESTED",
     )
+
 
 def pentomino_chessboard_unknownproblem():
     to_cover = pd.read_csv("tests/data/pentominos-chessboard.csv", sep=" ").to_numpy()
