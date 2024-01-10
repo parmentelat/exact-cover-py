@@ -1,1 +1,1 @@
-from .exact_cover import exact_cover
+from .exact_cover import exact_covers

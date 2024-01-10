@@ -245,7 +245,7 @@ class Matrix:
                 r = r.down
             c.uncover_column()
 
-def exact_cover(array: np.ndarray):
+def exact_covers(array: np.ndarray):
     """
     a generator that yields all solutions
     """

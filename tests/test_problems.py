@@ -2,7 +2,7 @@ from itertools import islice
 
 import pytest
 
-from exact_cover_py import exact_cover
+from exact_cover_py import exact_covers
 
 try:
     from . import problems
@@ -32,7 +32,7 @@ def define_test(problem_name):
                 canonical_solutions = canonical(solutions)
                 try:
                     canonical_partial_computed = set(
-                        tuple(sorted(x)) for x in exact_cover(data))
+                        tuple(sorted(x)) for x in exact_covers(data))
                     assert canonical_partial_computed == canonical_solutions
                 except StopIteration:
                     assert solutions == set()
@@ -41,7 +41,7 @@ def define_test(problem_name):
                 how_many = len(canonical_first_solutions)
                 try:
                     canonical_partial_computed = set(
-                        tuple(sorted(x)) for x in islice(exact_cover(data), how_many))
+                        tuple(sorted(x)) for x in islice(exact_covers(data), how_many))
                     assert canonical_partial_computed == canonical_first_solutions
                 except StopIteration:
                     assert 'first_solutions' == set()
