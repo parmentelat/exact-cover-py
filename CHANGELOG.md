@@ -1,6 +1,6 @@
 # ChangeLog
 
-## 2024 Jan 9 - v0.0.1
+## 2024 Jan 10 - v0.0.2
 
 - first release
 - full Python, using dataclasses with slots
