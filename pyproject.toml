@@ -25,6 +25,11 @@ tests = [
     "pytest",
     "pandas",
 ]
+build = [
+    "build",
+    "hatchling",
+    "twine",
+]
 
 [project.urls]
 Homepage = "https://github.com/parmentelat/exact_cover_py"

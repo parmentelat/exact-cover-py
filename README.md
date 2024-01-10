@@ -30,6 +30,13 @@ print(next(exact_covers(problem)))
 # all solutions
 print(list(exact_covers(problem)))
 [[1, 5, 3]]
+
+# number of solutions
+def mylen(iterable):
+    return sum(map(lambda x: 1, iterable))
+
+print(mylen(exact_covers(problem)))
+2
 ```
 
 ## Development
@@ -41,16 +48,15 @@ pip install -e .[tests]
 pytest
 ```
 
-## Building
+## Building and publishing
 
 ```bash
-pip install build
+# deps
+pip install build hatchling twine
+
+# build
 python -m build
-```
 
-## Publishing
-
-```bash
-pip install twine
+# publish
 twine upload dist/*
 ```
