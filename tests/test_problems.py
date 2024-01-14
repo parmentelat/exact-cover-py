@@ -6,21 +6,22 @@ from exact_cover_py import exact_covers
 
 try:
     from . import problems
-except:
+except (ModuleNotFoundError, ImportError):
     import problems
-
-all_problems = [
-    problem for problem in problems.__dict__ if "_problem" in problem
-]
-
-# make a set of sorted tuples
-def canonical(iterable):
-    return set(tuple(sorted(x)) for x in iterable)
+canonical = problems.canonical
+canonical_s = problems.canonical_s
+canonical_1 = problems.canonical_1
 
 
-def define_test(problem_name):
+PARTIAL_TESTS = {
+    "pentomino_chessboard_problem": 20,
+    "pentomino_5_12_problem": 20,
+}
+
+
+def define_test(problem_name, problem):
     """
-    for a given problem found defined in problems.py
+    for a given problem defined in problems.py
     say small_trimino_problem
     we define a derived function named like
     say test_small_trimino_problem
@@ -28,27 +29,47 @@ def define_test(problem_name):
 
     def test_solutions(problem):
         match problem:
-            case {'data': data, 'solutions': solutions}:
+            # check we get the first solutions in the same order
+            # as in the solutions list
+            case {
+                "data": data,
+                "solutions": solutions,
+                "first_solutions": first_solutions,
+            }:
+                # this would be if the order of solutions could be trusted
+                # canonical_solutions = canonical_s(solutions)
+                # canonical_first_solutions = canonical_solutions[:first_solutions]
+                # try:
+                #     gen = exact_covers(data)
+                #     computed_first_solutions = canonical_s(islice(gen, first_solutions))
+                #     assert canonical_first_solutions == computed_first_solutions
+                # except StopIteration:
+                #     assert canonical_solutions == []
+                canonical_solutions = canonical(solutions)
+                gen = exact_covers(data)
+                for _ in range(first_solutions):
+                    canonical_computed_solution = canonical_1(next(gen))
+                    assert canonical_computed_solution in canonical_solutions
+            case {
+                "data": data,
+                "solutions": solutions,
+            }:
                 canonical_solutions = canonical(solutions)
                 try:
-                    canonical_partial_computed = set(
-                        tuple(sorted(x)) for x in exact_covers(data))
-                    assert canonical_partial_computed == canonical_solutions
+                    canonical_computed = canonical(exact_covers(data))
+                    assert canonical_computed == canonical_solutions
                 except StopIteration:
-                    assert solutions == set()
-            case {'data': data, 'first_solutions': first_solutions}:
-                canonical_first_solutions = canonical(first_solutions)
-                how_many = len(canonical_first_solutions)
-                try:
-                    canonical_partial_computed = set(
-                        tuple(sorted(x)) for x in islice(exact_covers(data), how_many))
-                    assert canonical_partial_computed == canonical_first_solutions
-                except StopIteration:
-                    assert 'first_solutions' == set()
-    problem = problems.__dict__[problem_name]()
+                    assert solutions == []
+
+    # problem = problems.__dict__[problem_name]()
     test_name = f"test_{problem_name}"
-    # assign the global variable test_name to the newly defined function
+    if problem_name in PARTIAL_TESTS:
+        problem["first_solutions"] = PARTIAL_TESTS[problem_name]
+    # assign the global variable test_<problem_name>
+    # to the newly defined function
     globals()[test_name] = lambda: test_solutions(problem)
 
-for problem in all_problems:
-    define_test(problem)
+
+for problem_name, problem_function in problems.ALL_PROBLEMS.items():
+    problem = problem_function()
+    define_test(problem_name, problem)
