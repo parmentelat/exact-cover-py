@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "exact_cover_py"
-version = "0.0.1"
+version = "0.0.3"
 description = "Exact cover solver in Python"
 readme = "README.md"
 license="CC-BY-NC-4.0"
