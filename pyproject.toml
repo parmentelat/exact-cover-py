@@ -32,7 +32,7 @@ classifiers = [
 [project.optional-dependencies]
 tests = [
     "pytest",
-    # "pandas",
+    "exact-cover-samples",
 ]
 build = [
     "build",
