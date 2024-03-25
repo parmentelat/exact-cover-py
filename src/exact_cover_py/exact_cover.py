@@ -1,253 +1,219 @@
-"""
-Donald Knuth's Algorithm X implemented in Python.
-"""
+# pylint: disable=invalid-name
 
-from dataclasses import dataclass
+"""
+Donald Knuth's Algorithm X implemented in Python
+
+references point to taocp - chapter 7.2.2.1
+in Volume 4B
+"""
 
 import numpy as np
 
-@dataclass(slots=True)
-class Node:
+DTYPE = np.int16
+UNUSED = -(2**15)
+
+
+
+def init(problem: np.ndarray):
     """
-    Node in a doubly-linked list.
+    problem is expected to be a boolean matrix
+    representing the exact cover problem
+
+    see:
+     (10) p.3 and
+      Table 1. p. 4
     """
-    left: 'Node'
-    right: 'Node'
-    up: 'Node'
-    down: 'Node'
-    # point to relative column header, also referred to as col_node
-    # None for the col headers themselves
-    col: 'Node'
-    # row index for the non-header nodes
-    # -1 for the header nodes
-    row: int
-    # the S heuristic
-    sum: int = 0
+    N, M = problem.shape
+    nb_nodes = problem.sum()
+    # adding the root node and spacer nodes in the mix
+    Z = 1 + M + nb_nodes + N + 1
+    LLINK = np.zeros(M+1, dtype=DTYPE)
+    RLINK = np.zeros(M+1, dtype=DTYPE)
 
-    def __repr__(self):
-        # root node
-        if self.down is None:
-            return "root"
-        # a header node
-        if self.col is None:
-            return f"header [S={self.sum}]"
-        else:
-            return f"{self.row}x{self.col.row}"
+    TOP = np.zeros(Z, dtype=DTYPE)
+    ULINK = np.zeros(Z, dtype=DTYPE)
+    DLINK = np.zeros(Z, dtype=DTYPE)
 
-    def insert_horizontally_after(self, where):
-        """
-        attach self to the right of where
-        if where is None, self gets the single node in its row
-        """
-        if where is None:
-            self.left = self
-            self.right = self
-        else:
-            self.right = where.right
-            self.left = where
-            where.right.left = self
-            where.right = self
+    LLINK[:] = (np.arange(M+1) - 1) % (M+1)
+    RLINK[:] = (np.arange(M+1) + 1) % (M+1)
 
-    def insert_vertically_after(self, where):
-        """
-        attach self below where
-        if where is None, self gets the single node in its column
-        """
-        if where is None:
-            self.up = self
-            self.down = self
-        else:
-            self.down = where.down
-            self.up = where
-            where.down.up = self
-            where.down = self
+    # labelled LEN in the original paper
+    TOP[0] = ULINK[0] = DLINK[0] = UNUSED
+    TOP[1:M+1] = np.sum(problem, axis=0)
 
-    def cover_horizontally(self):
-        """
-        remove self from the row
-        """
-        if self.right is self:
-            return
-        self.right.left = self.left
-        self.left.right = self.right
+    # fill ULINK and TOP
+    previous = np.arange(M) + 1
+    counter = M+1
+    # first spacer node
+    ULINK[counter] = UNUSED
+    for i in range(N):
+        row = problem[i]
+        first_in_row = 0
+        for j, b in enumerate(row):
+            if b:
+                counter += 1
+                ULINK[counter] = previous[j]
+                TOP[counter] = j+1
+                previous[j] = counter
+                if first_in_row == 0:
+                    first_in_row = counter
+        # spacer node
+        counter += 1
+        ULINK[counter] = first_in_row
+        TOP[counter] = -(i+1)
+    # we can now fill the first row
+    ULINK[1:M+1] = previous
 
-    def uncover_horizontally(self):
-        """
-        reinsert self into the row
-        """
-        self.right.left = self
-        self.left.right = self
+    # fill DLINK - counter already OK but let's be safe
+    previous = np.arange(M) + 1
+    counter = Z-1
+    DLINK[counter] = UNUSED
+    for i in range(N-1, -1, -1):
+        row = problem[i]
+        last_in_row = 0
+        for j in range(M-1, -1, -1):
+            b = row[j]
+            if b:
+                counter -= 1
+                DLINK[counter] = previous[j]
+                previous[j] = counter
+                if last_in_row == 0:
+                    last_in_row = counter
+        # spacer node
+        counter -= 1
+        DLINK[counter] = last_in_row
+    # we can now fill the first row
+    DLINK[1:M+1] = previous
 
-    def cover_vertically(self):
-        """
-        remove self from the column
-        """
-        if self.down is self:
-            return
-        self.down.up = self.up
-        self.up.down = self.down
-
-    def uncover_vertically(self):
-        """
-        reinsert self into the column
-        """
-        self.down.up = self
-        self.up.down = self
-
-    def cover_column(self):
-        """
-        remove the column from the matrix
-        self is expected to be a column header
-        """
-        self.cover_horizontally()
-        # iterating on the rows below the header
-        nodei = self.down
-        while nodei is not self:
-            # iterating on the columns of the row
-            nodej = nodei.right
-            while nodej is not nodei:
-                nodej.cover_vertically()
-                nodej.col.sum -= 1
-                nodej = nodej.right
-            nodei = nodei.down
-
-    def uncover_column(self):
-        """
-        reinsert the column into the matrix
-        self is expected to be a column header
-        """
-        # iterating on the rows above the header
-        nodei = self.up
-        while nodei is not self:
-            # iterating on the columns of the row
-            nodej = nodei.left
-            while nodej is not nodei:
-                nodej.uncover_vertically()
-                nodej.col.sum += 1
-                nodej = nodej.left
-            nodei = nodei.up
-        self.uncover_horizontally()
+    return LLINK, RLINK, TOP, ULINK, DLINK
 
 
-@dataclass
-class Matrix:
+def cover(i, LLINK, RLINK, TOP, ULINK, DLINK):
     """
-    the sparse matrix that models a problem instance
+    (12) p. 4
     """
-    root: Node
+    p = DLINK[i]
+    while p != i:
+        hide(p, LLINK, RLINK, TOP, ULINK, DLINK)
+        p = DLINK[p]
 
-    def reverse(self):
-        """
-        reconstruct the input matrix for debugging
-        """
-        nodej = self.root.right
-        ones = set()
-        col_index = 0
-        while nodej is not self.root:
-            nodei = nodej.down
-            while nodei is not nodej:
-                ones.add((nodei.row, nodei.col.row))
-                nodei = nodei.down
-            nodej = nodej.right
-            col_index += 1
+    l, r = LLINK[i], RLINK[i]
+    RLINK[l], LLINK[r] = r, l
 
-        rows, cols = (max(ones, key=lambda x: x[0])[0],
-                      max(ones, key=lambda x: x[1])[1])
 
-        loop = np.zeros((rows+1, cols+1), dtype=np.uint8)
-        for row, col in ones:
-            loop[row, col] = True
-        # outline empty rows and columns
-        empty_rows = [i for i in range(rows+1)
-                      if not np.any(loop[i])]
-        empty_cols = [j for j in range(cols+1)
-                        if not np.any(loop[:, j])]
-        for i in empty_rows:
-            loop[i] = 2
-        for j in empty_cols:
-            loop[:, j] = 2
-        return loop
-
-    @staticmethod
-    def from_numpy(array: np.ndarray) -> 'Matrix':
-        """
-        Create a matrix from a numpy array.
-        """
-        # create the colomn headers
-        _, width = array.shape
-        root = nav = Node(None, None, None, None, None, -1)
-        root.right = root.left = root
-        # for direct access to the column headers
-        column_headers = []
-        for col_index in range(width):
-            col_node = Node(None, None, None, None, None, col_index)
-            col_node.insert_horizontally_after(nav)
-            col_node.down = col_node.up = col_node
-            nav = col_node
-            column_headers.append(col_node)
-        nav.right = root
-        # fill the matrix
-        for row_index, row in enumerate(array):
-            where_in_row = None
-            for col_index, (col_node, value) in enumerate(
-                zip(column_headers, row)):
-                if value:
-                    node = Node(None, None, None, None, col_node, row_index)
-                    # connect horizontally
-                    node.insert_horizontally_after(where_in_row)
-                    where_in_row = node
-                    # connect vertically
-                    where_in_column = column_headers[col_index].up
-                    node.insert_vertically_after(where_in_column)
-                    # update header's sum
-                    col_node.sum += 1
-
-        return Matrix(root)
-
-    def optimal_column(self):
-        """
-        return the column header with the smallest sum
-        """
-        node = self.root.right
-        min_sum = node.sum
-        min_node = node
-        while node is not self.root:
-            if node.sum < min_sum:
-                min_sum = node.sum
-                min_node = node
-            node = node.right
-        return min_node
-
-    def search(self, k=0):
-        """
-        a generator that yields all solutions
-        """
-        h = self.root
-        if h.right is h:
-            yield []
+def hide(p, LLINK, RLINK, TOP, ULINK, DLINK):
+    """
+    (13) p. 5
+    """
+    q = p + 1
+    while q != p:
+        x, u, d = TOP[q], ULINK[q], DLINK[q]
+        if x <= 0:
+            # spacer
+            q = u
         else:
-            # use the S heuristic
-            c = self.optimal_column()
-            c.cover_column()
-            r = c.down
-            while r is not c:
-                solution = [r.row]
-                j = r.right
-                while j is not r:
-                    j.col.cover_column()
-                    j = j.right
-                for s in self.search(k+1):
-                    yield solution + s
-                j = r.left
-                while j is not r:
-                    j.col.uncover_column()
-                    j = j.left
-                r = r.down
-            c.uncover_column()
+            DLINK[u], ULINK[d] = d, u
+            TOP[x] -= 1
+            q += 1
+
+
+def uncover(i, LLINK, RLINK, TOP, ULINK, DLINK):
+    """
+    (14) p. 5
+    """
+    l, r = LLINK[i], RLINK[i]
+    RLINK[l], LLINK[r] = i, i
+    p = ULINK[i]
+    while p != i:
+        unhide(p, LLINK, RLINK, TOP, ULINK, DLINK)
+        p = ULINK[p]
+
+
+def unhide(p, LLINK, RLINK, TOP, ULINK, DLINK):
+    """
+    (15) p. 5
+    """
+    q = p - 1
+    while q != p:
+        x, u, d = TOP[q], ULINK[q], DLINK[q]
+        if x <= 0:
+            # spacer
+            q = d
+        else:
+            DLINK[u], ULINK[d] = q, q
+            TOP[x] += 1
+            q -= 1
+
+
+def algorithm_x(LLINK, RLINK, TOP, ULINK, DLINK):
+    """
+    p. 5
+    """
+
+    # X1 - done in init beeforehand
+    N = len(LLINK) - 1
+    Z = len(DLINK) - 1
+
+    X = np.zeros(N+1, dtype=DTYPE)
+    depth = 0       # X1    # is called l in the book
+
+    step = 2
+    i = None
+    while True:
+        if step == 2:                   # X2
+            if RLINK[0] == 0:
+                yield X[:depth]
+                step = 8
+            else:
+                step = 3
+        elif step == 3:                 # X3
+            # no heuristic for now
+            i = RLINK[0]
+            step = 4
+        elif step == 4:                 # X4
+            cover(i, LLINK, RLINK, TOP, ULINK, DLINK)
+            X[depth] = DLINK[i]
+            step = 5
+        elif step == 5:                 # X5
+            if X[depth] == i:
+                step = 7
+            else:
+                p = X[depth] + 1
+                while p != X[depth]:
+                    j = TOP[p]
+                    if j <= 0: # spacer
+                        p = ULINK[p]
+                    else:
+                        cover(j, LLINK, RLINK, TOP, ULINK, DLINK)
+                        p += 1
+                depth += 1
+                step = 2
+        elif step == 6:                 # X6
+            p = X[depth] - 1
+            while p != X[depth]:
+                j = TOP[p]
+                if j <= 0:
+                    p = DLINK[p]
+                else:
+                    uncover(j, LLINK, RLINK, TOP, ULINK, DLINK)
+                    p -= 1
+            i = TOP[X[depth]]
+            X[depth] = DLINK[X[depth]]
+            step = 5
+        elif step == 7:                 # X7
+            uncover(i, LLINK, RLINK, TOP, ULINK, DLINK)
+            step = 8
+        elif step == 8:                 # X8
+            if depth == 0:
+                return
+            else:
+                depth -= 1
+                step = 6
+
 
 def exact_covers(array: np.ndarray):
     """
     a generator that yields all solutions
     """
-    matrix = Matrix.from_numpy(array)
-    yield from matrix.search()
+    LLINK, RLINK, TOP, ULINK, DLINK = init(array)
+    yield from algorithm_x(LLINK, RLINK, TOP, ULINK, DLINK)
