@@ -167,8 +167,14 @@ def algorithm_x(LLINK, RLINK, TOP, ULINK, DLINK):
             else:
                 step = 3
         elif step == 3:                 # X3
-            # no heuristic for now
-            i = RLINK[0]
+            # spot i so that TOP[i] is minimal
+            smallest = TOP[RLINK[0]]
+            i = nav = RLINK[0]
+            while nav != 0:
+                if TOP[nav] < smallest:
+                    smallest = TOP[nav]
+                    i = nav
+                nav = RLINK[nav]
             step = 4
         elif step == 4:                 # X4
             cover(i, LLINK, RLINK, TOP, ULINK, DLINK)
