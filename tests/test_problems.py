@@ -7,12 +7,6 @@ from exact_cover_py import exact_covers
 from exact_cover_samples import problems, canonical, canonical_s, canonical_1
 
 
-# PARTIAL_TESTS = {
-#     "pentomino_chessboard_problem": 20,
-#     "pentomino_5_12_problem": 20,
-# }
-
-
 def define_test(problem):
     """
     for a given problem defined in problems
@@ -36,7 +30,7 @@ def define_test(problem):
                 except StopIteration:
                     assert solutions == []
 
-    test_name = f"test_{problem["name"]}"
+    test_name = f"test_{problem["shortname"]}"
     # if problem_name in PARTIAL_TESTS:
     #     problem["first_solutions"] = PARTIAL_TESTS[problem_name]
     # assign the global variable test_<problem_name>
