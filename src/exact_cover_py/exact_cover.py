@@ -223,3 +223,13 @@ def exact_covers(array: np.ndarray):
     """
     LLINK, RLINK, TOP, ULINK, DLINK = init(array)
     yield from algorithm_x(LLINK, RLINK, TOP, ULINK, DLINK)
+
+
+def sanity_check(array: np.ndarray):
+    """
+    checks that the input array is a valid exact cover problem
+    """
+    if array.ndim != 2:
+        raise ValueError("input should be 2-dimensional")
+    if not np.all(array == array.astype(bool)):
+        raise ValueError("input should be boolean only")
