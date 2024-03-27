@@ -90,21 +90,7 @@ def init(problem: np.ndarray):
     return LLINK, RLINK, TOP, ULINK, DLINK
 
 
-@nb.njit
-def cover(i, LLINK, RLINK, TOP, ULINK, DLINK):
-    """
-    (12) p. 4
-    """
-    p = DLINK[i]
-    while p != i:
-        hide(p, LLINK, RLINK, TOP, ULINK, DLINK)
-        p = DLINK[p]
-
-    l, r = LLINK[i], RLINK[i]
-    RLINK[l], LLINK[r] = r, l
-
-
-@nb.njit
+@nb.njit("void(i2, i2[:], i2[:], i2[:], i2[:], i2[:])", cache=True, nogil=True, inline="never")
 def hide(p, LLINK, RLINK, TOP, ULINK, DLINK):
     """
     (13) p. 5
@@ -121,20 +107,21 @@ def hide(p, LLINK, RLINK, TOP, ULINK, DLINK):
             q += 1
 
 
-@nb.njit
-def uncover(i, LLINK, RLINK, TOP, ULINK, DLINK):
+@nb.njit("void(i2, i2[:], i2[:], i2[:], i2[:], i2[:])", cache=True, nogil=True, inline="never")
+def cover(i, LLINK, RLINK, TOP, ULINK, DLINK):
     """
-    (14) p. 5
+    (12) p. 4
     """
-    l, r = LLINK[i], RLINK[i]
-    RLINK[l], LLINK[r] = i, i
-    p = ULINK[i]
+    p = DLINK[i]
     while p != i:
-        unhide(p, LLINK, RLINK, TOP, ULINK, DLINK)
-        p = ULINK[p]
+        hide(p, LLINK, RLINK, TOP, ULINK, DLINK)
+        p = DLINK[p]
+
+    l, r = LLINK[i], RLINK[i]
+    RLINK[l], LLINK[r] = r, l
 
 
-@nb.njit
+@nb.njit("void(i2, i2[:], i2[:], i2[:], i2[:], i2[:])", cache=True, nogil=True, inline="never")
 def unhide(p, LLINK, RLINK, TOP, ULINK, DLINK):
     """
     (15) p. 5
@@ -149,6 +136,19 @@ def unhide(p, LLINK, RLINK, TOP, ULINK, DLINK):
             DLINK[u], ULINK[d] = q, q
             TOP[x] += 1
             q -= 1
+
+
+@nb.njit("void(i2, i2[:], i2[:], i2[:], i2[:], i2[:])", cache=True, nogil=True, inline="never")
+def uncover(i, LLINK, RLINK, TOP, ULINK, DLINK):
+    """
+    (14) p. 5
+    """
+    l, r = LLINK[i], RLINK[i]
+    RLINK[l], LLINK[r] = i, i
+    p = ULINK[i]
+    while p != i:
+        unhide(p, LLINK, RLINK, TOP, ULINK, DLINK)
+        p = ULINK[p]
 
 
 def algorithm_x(LLINK, RLINK, TOP, ULINK, DLINK):
