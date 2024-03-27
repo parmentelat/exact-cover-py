@@ -11,8 +11,10 @@ import numpy as np
 
 import numba as nb
 
-DTYPE = np.int16
-UNUSED = -(2**15)
+# DTYPE = np.int16
+# UNUSED = -(2**15)
+DTYPE = np.int64
+UNUSED = -(2**63)
 
 
 @nb.njit
@@ -90,7 +92,7 @@ def init(problem: np.ndarray):
     return LLINK, RLINK, TOP, ULINK, DLINK
 
 
-@nb.njit("void(i2, i2[:], i2[:], i2[:], i2[:], i2[:])", cache=True, nogil=True, inline="never")
+@nb.njit("void(i8, i8[:], i8[:], i8[:], i8[:], i8[:])", cache=True)
 def hide(p, LLINK, RLINK, TOP, ULINK, DLINK):
     """
     (13) p. 5
@@ -107,7 +109,7 @@ def hide(p, LLINK, RLINK, TOP, ULINK, DLINK):
             q += 1
 
 
-@nb.njit("void(i2, i2[:], i2[:], i2[:], i2[:], i2[:])", cache=True, nogil=True, inline="never")
+@nb.njit("void(i8, i8[:], i8[:], i8[:], i8[:], i8[:])", cache=True)
 def cover(i, LLINK, RLINK, TOP, ULINK, DLINK):
     """
     (12) p. 4
@@ -121,7 +123,7 @@ def cover(i, LLINK, RLINK, TOP, ULINK, DLINK):
     RLINK[l], LLINK[r] = r, l
 
 
-@nb.njit("void(i2, i2[:], i2[:], i2[:], i2[:], i2[:])", cache=True, nogil=True, inline="never")
+@nb.njit("void(i8, i8[:], i8[:], i8[:], i8[:], i8[:])", cache=True)
 def unhide(p, LLINK, RLINK, TOP, ULINK, DLINK):
     """
     (15) p. 5
@@ -138,7 +140,7 @@ def unhide(p, LLINK, RLINK, TOP, ULINK, DLINK):
             q -= 1
 
 
-@nb.njit("void(i2, i2[:], i2[:], i2[:], i2[:], i2[:])", cache=True, nogil=True, inline="never")
+@nb.njit("void(i8, i8[:], i8[:], i8[:], i8[:], i8[:])", cache=True)
 def uncover(i, LLINK, RLINK, TOP, ULINK, DLINK):
     """
     (14) p. 5
