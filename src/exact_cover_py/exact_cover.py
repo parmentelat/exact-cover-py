@@ -9,11 +9,13 @@ in Volume 4B
 
 import numpy as np
 
+import numba as nb
+
 DTYPE = np.int16
 UNUSED = -(2**15)
 
 
-
+@nb.njit
 def init(problem: np.ndarray):
     """
     problem is expected to be a boolean matrix
@@ -88,6 +90,7 @@ def init(problem: np.ndarray):
     return LLINK, RLINK, TOP, ULINK, DLINK
 
 
+@nb.njit
 def cover(i, LLINK, RLINK, TOP, ULINK, DLINK):
     """
     (12) p. 4
@@ -101,6 +104,7 @@ def cover(i, LLINK, RLINK, TOP, ULINK, DLINK):
     RLINK[l], LLINK[r] = r, l
 
 
+@nb.njit
 def hide(p, LLINK, RLINK, TOP, ULINK, DLINK):
     """
     (13) p. 5
@@ -117,6 +121,7 @@ def hide(p, LLINK, RLINK, TOP, ULINK, DLINK):
             q += 1
 
 
+@nb.njit
 def uncover(i, LLINK, RLINK, TOP, ULINK, DLINK):
     """
     (14) p. 5
@@ -129,6 +134,7 @@ def uncover(i, LLINK, RLINK, TOP, ULINK, DLINK):
         p = ULINK[p]
 
 
+@nb.njit
 def unhide(p, LLINK, RLINK, TOP, ULINK, DLINK):
     """
     (15) p. 5

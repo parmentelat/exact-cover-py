@@ -20,8 +20,7 @@ authors = [
 requires-python = ">=3.10"
 dependencies = [
     "numpy",
-    # not yet used
-    # "numba",
+    "numba",
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
