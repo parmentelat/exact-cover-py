@@ -10,7 +10,7 @@ Issues = "https://github.com/parmentelat/exact-cover-py/issues"
 
 [project]
 name = "exact_cover_py"
-version = "0.0.4"
+version = "0.1.0"
 description = "Exact cover solver in Python"
 readme = "README.md"
 license="CC-BY-NC-4.0"
