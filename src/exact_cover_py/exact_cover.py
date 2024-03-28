@@ -12,8 +12,10 @@ import numpy as np
 import numba as nb
 
 # DTYPE = np.int16
+# DTYPE =  "i2"
 # UNUSED = -(2**15)
 DTYPE = np.int64
+NBTYPE = "i8"
 UNUSED = -(2**63)
 
 
@@ -92,7 +94,7 @@ def init(problem: np.ndarray):
     return LLINK, RLINK, TOP, ULINK, DLINK
 
 
-@nb.njit("i8(i8, i8[:])", cache=True)
+@nb.njit(f"{NBTYPE}({NBTYPE}, {NBTYPE}[:])", cache=True)
 def spot_solution(x, TOP):
     """
     (16) p. 5
@@ -102,7 +104,7 @@ def spot_solution(x, TOP):
     return -TOP[x] - 1
 
 
-@nb.njit("(i8[:], i8[:], i8[:], i8[:], i8[:])",
+@nb.njit(f"({NBTYPE}[:], {NBTYPE}[:], {NBTYPE}[:], {NBTYPE}[:], {NBTYPE}[:])",
          cache=True,
          )
 def algorithm_x(LLINK, RLINK, TOP, ULINK, DLINK):
