@@ -11,12 +11,15 @@ import numpy as np
 
 import numba as nb
 
-# DTYPE = np.int16
-# DTYPE =  "i2"
-# UNUSED = -(2**15)
-DTYPE = np.int64
-NBTYPE = "i8"
-UNUSED = -(2**63)
+DTYPE = np.int16
+NBTYPE =  "i2"
+UNUSED = -(2**15)
+# DTYPE = np.int32
+# NBTYPE =  "i4"
+# UNUSED = -(2**31)
+# DTYPE = np.int64
+# NBTYPE = "i8"
+# UNUSED = -(2**63)
 
 
 @nb.njit
