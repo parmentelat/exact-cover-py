@@ -152,6 +152,17 @@ def uncover(i, LLINK, RLINK, TOP, ULINK, DLINK):
         unhide(p, LLINK, RLINK, TOP, ULINK, DLINK)
         p = ULINK[p]
 
+
+@nb.njit("i8(i8, i8[:])", cache=True)
+def spot_solution(x, TOP):
+    """
+    (16) p. 5
+    """
+    while TOP[x] >= 0:
+        x += 1
+    return -TOP[x] - 1
+
+
 @nb.njit("(i8[:], i8[:], i8[:], i8[:], i8[:])",
          cache=True,
          )
@@ -172,7 +183,7 @@ def algorithm_x(LLINK, RLINK, TOP, ULINK, DLINK):
     while True:
         if step == 2:                   # X2
             if RLINK[0] == 0:
-                yield X[:depth]
+                yield [spot_solution(x, TOP) for x in X[:depth]]
                 step = 8
             else:
                 step = 3
