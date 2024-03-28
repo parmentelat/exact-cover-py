@@ -92,67 +92,6 @@ def init(problem: np.ndarray):
     return LLINK, RLINK, TOP, ULINK, DLINK
 
 
-@nb.njit("void(i8, i8[:], i8[:], i8[:], i8[:], i8[:])", cache=True)
-def hide(p, LLINK, RLINK, TOP, ULINK, DLINK):
-    """
-    (13) p. 5
-    """
-    q = p + 1
-    while q != p:
-        x, u, d = TOP[q], ULINK[q], DLINK[q]
-        if x <= 0:
-            # spacer
-            q = u
-        else:
-            DLINK[u], ULINK[d] = d, u
-            TOP[x] -= 1
-            q += 1
-
-
-@nb.njit("void(i8, i8[:], i8[:], i8[:], i8[:], i8[:])", cache=True)
-def cover(i, LLINK, RLINK, TOP, ULINK, DLINK):
-    """
-    (12) p. 4
-    """
-    p = DLINK[i]
-    while p != i:
-        hide(p, LLINK, RLINK, TOP, ULINK, DLINK)
-        p = DLINK[p]
-
-    l, r = LLINK[i], RLINK[i]
-    RLINK[l], LLINK[r] = r, l
-
-
-@nb.njit("void(i8, i8[:], i8[:], i8[:], i8[:], i8[:])", cache=True)
-def unhide(p, LLINK, RLINK, TOP, ULINK, DLINK):
-    """
-    (15) p. 5
-    """
-    q = p - 1
-    while q != p:
-        x, u, d = TOP[q], ULINK[q], DLINK[q]
-        if x <= 0:
-            # spacer
-            q = d
-        else:
-            DLINK[u], ULINK[d] = q, q
-            TOP[x] += 1
-            q -= 1
-
-
-@nb.njit("void(i8, i8[:], i8[:], i8[:], i8[:], i8[:])", cache=True)
-def uncover(i, LLINK, RLINK, TOP, ULINK, DLINK):
-    """
-    (14) p. 5
-    """
-    l, r = LLINK[i], RLINK[i]
-    RLINK[l], LLINK[r] = i, i
-    p = ULINK[i]
-    while p != i:
-        unhide(p, LLINK, RLINK, TOP, ULINK, DLINK)
-        p = ULINK[p]
-
-
 @nb.njit("i8(i8, i8[:])", cache=True)
 def spot_solution(x, TOP):
     """
@@ -170,6 +109,63 @@ def algorithm_x(LLINK, RLINK, TOP, ULINK, DLINK):
     """
     p. 5
     """
+
+    def hide(p):
+        """
+        (13) p. 5
+        """
+        q = p + 1
+        while q != p:
+            x, u, d = TOP[q], ULINK[q], DLINK[q]
+            if x <= 0:
+                # spacer
+                q = u
+            else:
+                DLINK[u], ULINK[d] = d, u
+                TOP[x] -= 1
+                q += 1
+
+
+    def cover(i):
+        """
+        (12) p. 4
+        """
+        p = DLINK[i]
+        while p != i:
+            hide(p)
+            p = DLINK[p]
+
+        l, r = LLINK[i], RLINK[i]
+        RLINK[l], LLINK[r] = r, l
+
+
+    def unhide(p):
+        """
+        (15) p. 5
+        """
+        q = p - 1
+        while q != p:
+            x, u, d = TOP[q], ULINK[q], DLINK[q]
+            if x <= 0:
+                # spacer
+                q = d
+            else:
+                DLINK[u], ULINK[d] = q, q
+                TOP[x] += 1
+                q -= 1
+
+
+    def uncover(i):
+        """
+        (14) p. 5
+        """
+        l, r = LLINK[i], RLINK[i]
+        RLINK[l], LLINK[r] = i, i
+        p = ULINK[i]
+        while p != i:
+            unhide(p)
+            p = ULINK[p]
+
 
     # X1 - done in init beeforehand
     N = len(LLINK) - 1
@@ -198,7 +194,7 @@ def algorithm_x(LLINK, RLINK, TOP, ULINK, DLINK):
                 nav = RLINK[nav]
             step = 4
         elif step == 4:                 # X4
-            cover(i, LLINK, RLINK, TOP, ULINK, DLINK)
+            cover(i)
             X[depth] = DLINK[i]
             step = 5
         elif step == 5:                 # X5
@@ -211,7 +207,7 @@ def algorithm_x(LLINK, RLINK, TOP, ULINK, DLINK):
                     if j <= 0: # spacer
                         p = ULINK[p]
                     else:
-                        cover(j, LLINK, RLINK, TOP, ULINK, DLINK)
+                        cover(j)
                         p += 1
                 depth += 1
                 step = 2
@@ -222,13 +218,13 @@ def algorithm_x(LLINK, RLINK, TOP, ULINK, DLINK):
                 if j <= 0:
                     p = DLINK[p]
                 else:
-                    uncover(j, LLINK, RLINK, TOP, ULINK, DLINK)
+                    uncover(j)
                     p -= 1
             i = TOP[X[depth]]
             X[depth] = DLINK[X[depth]]
             step = 5
         elif step == 7:                 # X7
-            uncover(i, LLINK, RLINK, TOP, ULINK, DLINK)
+            uncover(i)
             step = 8
         elif step == 8:                 # X8
             if depth == 0:
