@@ -152,7 +152,9 @@ def uncover(i, LLINK, RLINK, TOP, ULINK, DLINK):
         unhide(p, LLINK, RLINK, TOP, ULINK, DLINK)
         p = ULINK[p]
 
-
+@nb.njit("(i8[:], i8[:], i8[:], i8[:], i8[:])",
+         cache=True,
+         )
 def algorithm_x(LLINK, RLINK, TOP, ULINK, DLINK):
     """
     p. 5
@@ -166,7 +168,7 @@ def algorithm_x(LLINK, RLINK, TOP, ULINK, DLINK):
     depth = 0       # X1    # is called l in the book
 
     step = 2
-    i = None
+    # i = None - would crash numba
     while True:
         if step == 2:                   # X2
             if RLINK[0] == 0:
